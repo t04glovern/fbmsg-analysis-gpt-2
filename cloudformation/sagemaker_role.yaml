@@ -1,0 +1,47 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Notebook Instance Role for Facebook Messenger Analysis with GPT-2
+
+Parameters:
+
+  S3BucketName:
+    Type: String
+    Default: devopstar
+
+Resources:
+
+  ExecutionRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - sagemaker.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      Path: /
+      Policies:
+        - PolicyName: s3-list
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 's3:ListBucket'
+                Resource: !Sub arn:aws:s3:::${S3BucketName}
+
+        - PolicyName: s3-get
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 's3:GetObject'
+                  - 's3:PutObject'
+                  - 's3:DeleteObject'
+                Resource: !Sub arn:aws:s3:::${S3BucketName}/*
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonSageMakerFullAccess
+
+Outputs:
+  MLNotebookExecutionRole:
+    Value: !GetAtt [ ExecutionRole, Arn ]

@@ -1,138 +1,54 @@
-# gpt-2
+# Facebook Messenger Analysis w/ GPT-2
 
-Code and samples from the paper ["Language Models are Unsupervised Multitask Learners"](https://d4mucfpksywv.cloudfront.net/better-language-models/language-models.pdf).
+Original README.md for this repositories base is available at [GPT2-README.md](GPT2-README.md)
 
-For now, we have only released a smaller (117M parameter) version of GPT-2.
+## Local Notebook
 
-See more details in our [blog post](https://blog.openai.com/better-language-models/).
-
-## Installation
-
-Git clone this repository, and `cd` into directory for remaining commands
-```
-git clone https://github.com/openai/gpt-2.git && cd gpt-2
+```bash
+jupyter-notebook messenger-analysis.ipynb
 ```
 
-Then, follow instructions for either native or Docker installation.
+## AWS SageMaker Generate
 
-### Native Installation
+Create the SageMaker role that we'll attach to our SageMaker instance. Unfortunately since CloudFormation options for SageMaker do not allow us to attach Git repos as options yet.
 
-Download the model data
-```
-sh download_model.sh 117M
-```
-
-The remaining steps can optionally be done in a virtual environment using tools such as `virtualenv` or `conda`.
-
-Install tensorflow 1.12 (with GPU support, if you have a GPU and want everything to run faster)
-```
-pip3 install tensorflow==1.12.0
-```
-or
-```
-pip3 install tensorflow-gpu==1.12.0
+```bash
+aws cloudformation create-stack \
+    --stack-name "fb-msg-gpt2-sagemaker-role" \
+    --template-body file://cloudformation/sagemaker_role.yaml \
+    --parameters ParameterKey=S3BucketName,ParameterValue=devopstar \
+    --capabilities CAPABILITY_IAM
 ```
 
-Install other python packages:
-```
-pip3 install -r requirements.txt
-```
+Once the role has been created successfully, retrieve the ARN for the use in the steps to follow.
 
-### Docker Installation
-
-Build the Dockerfile and tag the created image as `gpt-2`:
-```
-docker build --tag gpt-2 -f Dockerfile.gpu . # or Dockerfile.cpu
+```bash
+aws cloudformation describe-stacks --stack-name "fb-msg-gpt2-sagemaker-role" \
+    --query 'Stacks[0].Outputs[?OutputKey==`MLNotebookExecutionRole`].OutputValue' \
+    --output text
 ```
 
-Start an interactive bash session from the `gpt-2` docker image.
+It will look something like `arn:aws:iam::XXXXXXXXXXXX:role/fb-msg-gpt2-sagemaker-role-ExecutionRole-PZL3SA3IZPSN`.
 
-You can opt to use the `--runtime=nvidia` flag if you have access to a NVIDIA GPU
-and a valid install of [nvidia-docker 2.0](https://github.com/nvidia/nvidia-docker/wiki/Installation-(version-2.0)).
-```
-docker run --runtime=nvidia -it gpt-2 bash
-```
+Next create a Code repository and pass it in the repo [https://github.com/t04glovern/fbmsg-analysis-gpt-2](https://github.com/t04glovern/fbmsg-analysis-gpt-2)
 
-## Usage
-
-| WARNING: Samples are unfiltered and may contain offensive content. |
-| --- |
-
-Some of the examples below may include Unicode text characters. Set the environment variable:
-```
-export PYTHONIOENCODING=UTF-8
-```
-to override the standard stream settings in UTF-8 mode.
-
-### Unconditional sample generation
-
-To generate unconditional samples from the small model:
-```
-python3 src/generate_unconditional_samples.py | tee /tmp/samples
-```
-There are various flags for controlling the samples:
-```
-python3 src/generate_unconditional_samples.py --top_k 40 --temperature 0.7 | tee /tmp/samples
+```bash
+aws sagemaker create-code-repository \
+    --code-repository-name "t04glovern-gpt-2" \
+    --git-config '{"Branch":"master", "RepositoryUrl" : "https://github.com/t04glovern/fbmsg-analysis-gpt-2" }'
 ```
 
-To check flag descriptions, use:
-```
-python3 src/generate_unconditional_samples.py -- --help
-```
+Finally create the notebook instance ensuring you pass in the Role ARN from before, and the default code repository we just created.
 
-### Conditional sample generation
-
-To give the model custom prompts, you can use:
-```
-python3 src/interactive_conditional_samples.py --top_k 40
+```bash
+aws sagemaker create-notebook-instance \
+    --notebook-instance-name "fbmsg-gpt-2" \
+    --instance-type "ml.p2.xlarge" \
+    --role-arn "arn:aws:iam::XXXXXXXXXXXXX:role/cat-gen-sagemaker-role-ExecutionRole-PZL3SA3IZPSN" \
+    --default-code-repository "t04glovern-gpt-2"
 ```
 
-To check flag descriptions, use:
-```
-python3 src/interactive_conditional_samples.py -- --help
-```
+## Attribution
 
-### Fine tuning on custom datasets
-
-To retrain GPT-2 117M model on a custom text dataset:
-
-```
-PYTHONPATH=src ./train --dataset <file|directory|glob>
-```
-
-If you want to precompute the dataset's encoding for multiple runs, you can instead use:
-
-```
-PYTHONPATH=src ./encode.py <file|directory|glob> /path/to/encoded.npz
-PYTHONPATH=src ./train --dataset /path/to/encoded.npz
-```
-
-## GPT-2 samples
-
-| WARNING: Samples are unfiltered and may contain offensive content. |
-| --- |
-
-While we have not yet released GPT-2 itself, you can see some samples from it in the `gpt-2-samples` folder.
-We show unconditional samples with default settings (temperature 1 and no truncation), with temperature 0.7, and with truncation with top_k 40.
-We show conditional samples, with contexts drawn from `WebText`'s test set, with default settings (temperature 1 and no truncation), with temperature 0.7, and with truncation with top_k 40.
-
-## Citation
-
-Please use the following bibtex entry:
-```
-@article{radford2019language,
-  title={Language Models are Unsupervised Multitask Learners},
-  author={Radford, Alec and Wu, Jeff and Child, Rewon and Luan, David and Amodei, Dario and Sutskever, Ilya},
-  year={2019}
-}
-```
-
-## Future work
-
-We may release code for evaluating the models on various benchmarks.
-
-We are still considering release of the larger models.
-
-## License
-
-MIT
+- [Generating Fake Conversations by fine-tuning OpenAI's GPT-2 on data from Facebook Messenger](https://svilentodorov.xyz/blog/gpt-finetune)
+- [Code for the paper "Language Models are Unsupervised Multitask Learners"](https://github.com/openai/gpt-2)
