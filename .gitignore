@@ -1,2 +1,5 @@
 __pycache__
 models/
+checkpoint
+samples
+.ipynb_checkpoints/
