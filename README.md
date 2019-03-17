@@ -43,9 +43,22 @@ Finally create the notebook instance ensuring you pass in the Role ARN from befo
 ```bash
 aws sagemaker create-notebook-instance \
     --notebook-instance-name "fbmsg-gpt-2" \
-    --instance-type "ml.p2.xlarge" \
-    --role-arn "arn:aws:iam::XXXXXXXXXXXXX:role/cat-gen-sagemaker-role-ExecutionRole-PZL3SA3IZPSN" \
+    --instance-type "ml.t2.medium" \
+    --role-arn "arn:aws:iam::XXXXXXXXXXXXX:role/fb-msg-gpt2-sagemaker-role-ExecutionRole-PZL3SA3IZPSN" \
     --default-code-repository "t04glovern-gpt-2"
+```
+
+## AWS SageMaker Delete
+
+```bash
+aws sagemaker delete-notebook-instance \
+    --notebook-instance-name "fbmsg-gpt-2"
+
+aws sagemaker delete-code-repository \
+    --code-repository-name "t04glovern-gpt-2"
+
+aws cloudformation delete-stack \
+    --stack-name "fb-msg-gpt2-sagemaker-role"
 ```
 
 ## Attribution
