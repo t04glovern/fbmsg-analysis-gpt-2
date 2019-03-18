@@ -1,5 +1,7 @@
 # Facebook Messenger Analysis w/ GPT-2
 
+Generate Fake Facebook conversations using OpenAI's GPT-2 training model and a large number of your existing facebook message data. Perform training using Amazon SageMaker GPU instances and CloudFormation.
+
 Original README.md for this repositories base is available at [GPT2-README.md](GPT2-README.md)
 
 ## Local Notebook
