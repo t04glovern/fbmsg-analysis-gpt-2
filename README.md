@@ -61,6 +61,13 @@ aws cloudformation delete-stack \
     --stack-name "fb-msg-gpt2-sagemaker-role"
 ```
 
+## VSCode Conversion regex
+
+```text
+\(([0-9]+\)) ([A-Z]+( )?[A-Z]+):
+* **$2:**
+```
+
 ## Attribution
 
 - [Generating Fake Conversations by fine-tuning OpenAI's GPT-2 on data from Facebook Messenger](https://svilentodorov.xyz/blog/gpt-finetune)
