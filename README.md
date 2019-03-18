@@ -43,7 +43,7 @@ Finally create the notebook instance ensuring you pass in the Role ARN from befo
 ```bash
 aws sagemaker create-notebook-instance \
     --notebook-instance-name "fbmsg-gpt-2" \
-    --instance-type "ml.t2.medium" \
+    --instance-type "ml.p2.xlarge" \
     --role-arn "arn:aws:iam::XXXXXXXXXXXXX:role/fb-msg-gpt2-sagemaker-role-ExecutionRole-PZL3SA3IZPSN" \
     --default-code-repository "t04glovern-gpt-2"
 ```
